@@ -1,10 +1,11 @@
 import { join } from '@std/path';
-import { Vcalendar, VcalendarBuilder, Vevent } from './src/BaseUtil.ts';
-import { getCNAllEvents, getGLAllEvents, getJPAllEvents } from './src/WikiController.ts';
+import { timeout, Vcalendar, VcalendarBuilder, Vevent } from './src/BaseUtil.ts';
+import { getCNAllEvents, getEventDetail, getGLAllEvents, getJPAllEvents } from './src/WikiController.ts';
 import { ReleaseJsonType } from './src/type/ReleaseJsonType.ts';
 import { UID_PREFIX } from './src/Const.ts';
 import { existsSync } from '@std/fs/exists';
 import { ServerEnum } from './src/enum/ServerEnum.ts';
+import { CNEventType } from './src/type/CNEventType.ts';
 
 
 function getICS(server: ServerEnum): Vcalendar {
@@ -38,7 +39,7 @@ function getJson(server: ServerEnum): ReleaseJsonType {
 async function main(server: ServerEnum) {
     console.log(`[***] Running At "${server}"`);
     const ics = getICS(server);
-    const json = getJson(server);
+    let json = getJson(server);
     const events = await (() => {
         switch (server) {
             case ServerEnum.GL: return getGLAllEvents();
@@ -49,11 +50,39 @@ async function main(server: ServerEnum) {
     })();
 
     let needSaveJSON = false;
+    // 去除 ics 和 json 的无效数据
+    ics.items = ics.items.filter(v => {
+        if (!events.some(vv => UID_PREFIX + vv.id === v.uid)) {
+            console.log(`[!] Remove "${v.summary}"(${v.uid}) in ICS`);
+            return false;
+        }
+        return true;
+    });
+    json = json.filter(v => {
+        if (!events.some(vv => vv.id === v.id)) {
+            console.log(`[!] Remove "${v.name}"(${v.id}) in JSON`);
+            needSaveJSON = true;
+            return false;
+        }
+        return true;
+    });
+
     console.log('[!] Total Events:', events.length);
     for (let i = 0; i < events.length; i++) {
         const item = events[i];
-        const dtstart = ics.dateToDateTime(item.start);
-        const dtend = ics.dateToDateTime(item.end);
+
+        const { start, end } = await (() => {
+            switch (server) {
+                case ServerEnum.GL: return getEventDetail(ServerEnum.GL, item.slug, item.feature);
+                case ServerEnum.JP: return getEventDetail(ServerEnum.JP, item.slug, item.feature);
+                case ServerEnum.CN: return {
+                    start: (item as CNEventType).start,
+                    end: (item as CNEventType).end
+                };
+            }
+        })();
+        const dtstart = ics.dateToDateTime(start);
+        const dtend = ics.dateToDateTime(end);
 
         let icsItem = ics.items.find(v => v.uid === UID_PREFIX + item.id);
         if (!icsItem) {
@@ -70,14 +99,14 @@ async function main(server: ServerEnum) {
 
         const jsonItem = json.find(v => v.id === item.id);
         if (jsonItem) {
-            if (jsonItem.start !== item.start.toISOString()) {
-                console.log(`${i + 1}/${events.length} Update "${item.name}"(${item.id}) start field in JSON. (${jsonItem.start} -> ${item.start.toISOString()})`);
-                jsonItem.start = item.start.toISOString();
+            if (jsonItem.start !== start.toISOString()) {
+                console.log(`${i + 1}/${events.length} Update "${item.name}"(${item.id}) start field in JSON. (${jsonItem.start} -> ${start.toISOString()})`);
+                jsonItem.start = start.toISOString();
                 needSaveJSON = true;
             }
-            if (jsonItem.end !== item.end.toISOString()) {
-                console.log(`${i + 1}/${events.length} Update "${item.name}"(${item.id}) end field in JSON. (${jsonItem.end} -> ${item.end.toISOString()})`);
-                jsonItem.end = item.end.toISOString();
+            if (jsonItem.end !== end.toISOString()) {
+                console.log(`${i + 1}/${events.length} Update "${item.name}"(${item.id}) end field in JSON. (${jsonItem.end} -> ${end.toISOString()})`);
+                jsonItem.end = end.toISOString();
                 needSaveJSON = true;
             }
             if (jsonItem.description !== item.description) {
@@ -90,11 +119,15 @@ async function main(server: ServerEnum) {
             json.push({
                 id: item.id,
                 name: item.name,
-                start: item.start.toISOString(),
-                end: item.end.toISOString(),
+                start: start.toISOString(),
+                end: end.toISOString(),
                 description: item.description ? item.description : void 0
             });
             needSaveJSON = true;
+        }
+
+        if (server !== ServerEnum.CN) {
+            await timeout(200);
         }
     }
 

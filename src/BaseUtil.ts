@@ -1,5 +1,5 @@
 /**
- * Last Update: 2025-01-22 04:00:00
+ * Last Update: 2025-01-24 06:00:00
  */
 
 class Vcalendar {
@@ -93,7 +93,7 @@ class Vcalendar {
         const items: Vevent[] = [];
 
         let inEvent = false;
-        const lines = data.split('\n');
+        const lines = data.split(/\r?\n/);
         for (const i of lines) {
             if (inEvent) {
                 const item = items.at(-1)!;
