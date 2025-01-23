@@ -453,5 +453,51 @@
         "name": "Sheside outside",
         "start": "2025-01-23T20:30:00.000Z",
         "end": "2025-02-08T20:00:00.000Z"
+    },
+    {
+        "id": "a32ae579",
+        "name": "Academy Club Story: A Pair's Final Adventure",
+        "start": "2025-02-08T20:30:00.000Z",
+        "end": "2025-02-18T20:00:00.000Z",
+        "description": "Rerun"
+    },
+    {
+        "id": "202f0e6b",
+        "name": "Radiant Moon, Raucous Dream",
+        "start": "2025-02-18T20:30:00.000Z",
+        "end": "2025-03-04T20:00:00.000Z"
+    },
+    {
+        "id": "1a5bec18",
+        "name": "Trinity Extracurriculars: In Search of Hidden Ruins",
+        "start": "2025-03-04T20:30:00.000Z",
+        "end": "2025-03-18T20:00:00.000Z",
+        "description": "Rerun"
+    },
+    {
+        "id": "98ee88d5",
+        "name": "The Senses Descend",
+        "start": "2025-03-18T20:30:00.000Z",
+        "end": "2025-04-01T20:00:00.000Z"
+    },
+    {
+        "id": "36b18a9c",
+        "name": "This is your record from Balancing Schale's Books with the General Student Council.",
+        "start": "2025-04-01T20:30:00.000Z",
+        "end": "2025-04-15T20:00:00.000Z",
+        "description": "Season 9"
+    },
+    {
+        "id": "cab9fc8d",
+        "name": "Serenade Promenade",
+        "start": "2025-04-15T20:30:00.000Z",
+        "end": "2025-04-29T20:00:00.000Z"
+    },
+    {
+        "id": "5ca39372",
+        "name": "Special Investigation: The Tree of Sephiroth",
+        "start": "2025-04-29T20:30:00.000Z",
+        "end": "2025-05-13T20:00:00.000Z",
+        "description": "Season 1"
     }
 ]
